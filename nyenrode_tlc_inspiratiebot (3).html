@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyenrode TLC — AI Inspiratiebot</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ny:#192d4f;--ny2:#243859;--ny3:#1a2440;
+  --gold:#c49a0c;--gold2:#e8b420;
+  --txt:#192d4f;--muted:#6b7a8d;--light:#b0bac4;
+  --bg:#f7f4ee;--white:#fff;--bdr:#ddd5c0;--bdr2:#ccc4b0;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt)}
+.shell{max-width:720px;margin:0 auto;min-height:100vh}
+
+.top{background:var(--ny3);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold)}
+.t-logo{font-family:'Playfair Display',serif;color:#fff;font-size:15px;letter-spacing:.15em;font-weight:700}
+.t-tag{font-size:10px;color:var(--gold2);letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+.t-r{font-size:11px;color:rgba(255,255,255,.4);text-align:right;line-height:1.5}
+
+.prog{background:var(--ny2);display:flex;align-items:center;padding:.55rem 2rem;gap:6px}
+.pd{height:2px;width:32px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .4s}
+.pd.done{background:rgba(255,255,255,.45)}
+.pd.on{background:var(--gold2)}
+.plbl{font-size:10px;color:rgba(255,255,255,.4);margin-left:10px;letter-spacing:.1em;text-transform:uppercase}
+
+.screen{display:none}
+.screen.on{display:block;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+.hero{background:var(--ny);padding:1.75rem 2rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;bottom:-60px;right:-60px;width:200px;height:200px;border:1px solid rgba(201,150,12,.1);border-radius:50%}
+.hero::after{content:'';position:absolute;bottom:-20px;right:-20px;width:100px;height:100px;border:1px solid rgba(201,150,12,.08);border-radius:50%}
+.htag{font-size:10px;color:var(--gold2);letter-spacing:.22em;text-transform:uppercase;font-weight:500;margin-bottom:.5rem}
+.htitle{font-family:'Playfair Display',serif;color:#fff;font-size:26px;line-height:1.3;font-weight:700;margin-bottom:.5rem}
+.htitle em{color:#f5c842;font-style:normal}
+.hbody{color:rgba(255,255,255,.58);font-size:13.5px;line-height:1.7;max-width:480px}
+
+.body{padding:1.5rem 2rem 2rem}
+.lbl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:.85rem}
+
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.4rem}
+.rc{border:1px solid var(--bdr);border-radius:12px;padding:.9rem 1rem;cursor:pointer;transition:all .2s;background:var(--white);position:relative}
+.rc:hover{border-color:var(--gold);background:#fefcf5}
+.rc.sel{border-color:var(--gold);background:#fefcf5;box-shadow:0 0 0 1.5px var(--gold)}
+.rc-chk{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center}
+.rc-chk i{font-size:10px;color:var(--ny)}
+.rc.sel .rc-chk{display:flex}
+.rc-ico{font-size:18px;color:var(--ny);margin-bottom:5px}
+.rc-t{font-weight:500;font-size:13.5px;color:var(--ny);margin-bottom:2px}
+.rc-s{font-size:12px;color:var(--muted);line-height:1.4}
+
+textarea{width:100%;border:1px solid var(--bdr);border-radius:10px;padding:.9rem 1rem;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);background:var(--white);resize:none;outline:none;transition:border .2s;line-height:1.7}
+textarea:focus{border-color:var(--gold)}
+textarea::placeholder{color:var(--light)}
+.chint{font-size:11px;color:var(--light);text-align:right;margin-top:4px}
+
+.brow{display:flex;align-items:center;gap:10px;margin-top:1.3rem}
+.bp{background:var(--gold);color:var(--ny);border:none;padding:.65rem 1.6rem;border-radius:7px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:13.5px;cursor:pointer;transition:background .2s;display:inline-flex;align-items:center;gap:7px}
+.bp:hover{background:var(--gold2)}
+.bp:disabled{opacity:.35;cursor:not-allowed}
+.bg{background:transparent;border:1px solid var(--bdr2);color:var(--muted);padding:.6rem 1.3rem;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.bg:hover{border-color:var(--ny);color:var(--ny)}
+
+.vbox{background:var(--white);border:1px solid var(--bdr);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1.1rem}
+.vbox-intro{font-size:13px;color:var(--muted);margin-bottom:.85rem;line-height:1.6}
+.pi{display:flex;gap:10px;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--bdr)}
+.pi:last-child{border-bottom:none}
+.pn{width:20px;height:20px;border-radius:50%;background:var(--ny);color:var(--gold2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.pt{font-size:13.5px;line-height:1.55;color:var(--txt)}
+.fq{font-size:13.5px;color:var(--ny);line-height:1.6;padding:.75rem .95rem;background:var(--bg);border-radius:0 8px 8px 0;border-left:3px solid var(--gold);margin-top:.8rem}
+.fq-lbl{font-weight:500;font-size:10px;color:var(--gold);display:block;margin-bottom:4px;letter-spacing:.12em;text-transform:uppercase}
+
+.spin{display:flex;flex-direction:column;align-items:center;padding:3rem 2rem;gap:1rem}
+.dots{display:flex;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:bnc .9s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bnc{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.spin-txt{font-size:13px;color:var(--muted);font-style:italic}
+
+.pb{margin-bottom:1.5rem}
+.pblbl{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:.6rem;display:flex;align-items:center;gap:8px}
+.pblbl::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+.sc{background:var(--white);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;margin-bottom:8px}
+.sh{padding:.9rem 1.15rem;display:flex;align-items:center;gap:12px}
+.si{width:32px;height:32px;border-radius:8px;background:var(--ny);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.si i{font-size:16px;color:var(--gold2)}
+.st{font-weight:500;font-size:14px;color:var(--ny)}
+.sb{padding:.1rem 1.15rem .9rem;font-size:13.5px;color:var(--txt);line-height:1.75;border-top:1px solid var(--bdr)}
+
+.cc{border-left:3px solid var(--gold);padding:.7rem .95rem;background:var(--white);border-radius:0 8px 8px 0;border-top:1px solid var(--bdr);border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+.cc-inst{font-size:10px;color:var(--gold);font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.cc-txt{font-size:13px;color:var(--txt);line-height:1.6}
+.cc-src{font-size:11.5px;color:var(--muted);margin-top:4px}
+.cc-src a{color:var(--muted);text-decoration:underline}
+
+.share-box{background:var(--white);border:1px solid var(--bdr);border-radius:12px;padding:1.2rem 1.3rem;margin-top:1.5rem}
+.share-title{font-size:13.5px;font-weight:500;color:var(--ny);margin-bottom:.4rem}
+.share-note{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:.9rem;padding:.65rem .9rem;background:var(--bg);border-radius:7px;border-left:2px solid var(--bdr2)}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap}
+.s-yes{background:var(--ny);color:#fff;border:none;padding:.62rem 1.4rem;border-radius:7px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s}
+.s-yes:hover{background:var(--ny2)}
+.s-no{background:transparent;border:1px solid var(--bdr2);color:var(--muted);padding:.6rem 1.2rem;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.s-no:hover{color:var(--txt);border-color:var(--txt)}
+.s-done{font-size:13px;color:var(--muted);font-style:italic;margin-top:.7rem;display:none;line-height:1.6}
+
+.cta-box{background:var(--ny3);border-radius:12px;padding:1.4rem;margin-top:1rem;border:1px solid rgba(201,150,12,.2)}
+.cta-t{font-family:'Playfair Display',serif;color:#fff;font-size:17px;margin-bottom:.35rem}
+.cta-b{color:rgba(255,255,255,.58);font-size:13px;line-height:1.65;margin-bottom:.9rem}
+.cta-btn{background:var(--gold);color:var(--ny);border:none;padding:.62rem 1.4rem;border-radius:7px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s}
+.cta-btn:hover{background:var(--gold2)}
+
+.err{background:#fff3f3;border:1px solid #f5c0c0;border-radius:8px;padding:.9rem 1rem;font-size:13px;color:#8a2a2a;line-height:1.6;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="top">
+    <div>
+      <div class="t-logo">NYENRODE</div>
+      <div class="t-tag">Teaching &amp; Learning Center</div>
+    </div>
+    <div class="t-r">Inspiratiesessie AI-agents<br>15 juni 2025</div>
+  </div>
+
+  <div class="prog">
+    <div class="pd on" id="d0"></div>
+    <div class="pd" id="d1"></div>
+    <div class="pd" id="d2"></div>
+    <span class="plbl" id="plbl">Stap 1 van 3</span>
+  </div>
+
+  <!-- STAP 1 -->
+  <div class="screen on" id="s0">
+    <div class="hero">
+      <div class="htag">AI Agents · Nyenrode TLC</div>
+      <div class="htitle">Wat kan AI <em>voor jou</em> betekenen?</div>
+      <div class="hbody">Vertel ons wie je bent en wat je bezighoudt — we laten je zien wat er echt mogelijk is.</div>
+    </div>
+    <div class="body">
+      <div class="lbl">Jouw rol</div>
+      <div class="role-grid">
+        <div class="rc" data-r="Docent / Lecturer" onclick="pickRole(this)">
+          <div class="rc-chk"><i class="ti ti-check"></i></div>
+          <div class="rc-ico"><i class="ti ti-school" aria-hidden="true"></i></div>
+          <div class="rc-t">Docent / Lecturer</div>
+          <div class="rc-s">Onderwijs, begeleiding, cursusontwerp</div>
+        </div>
+        <div class="rc" data-r="Onderzoeker" onclick="pickRole(this)">
+          <div class="rc-chk"><i class="ti ti-check"></i></div>
+          <div class="rc-ico"><i class="ti ti-microscope" aria-hidden="true"></i></div>
+          <div class="rc-t">Onderzoeker</div>
+          <div class="rc-s">Wetenschappelijk onderzoek, promovendi</div>
+        </div>
+        <div class="rc" data-r="Programmamanager" onclick="pickRole(this)">
+          <div class="rc-chk"><i class="ti ti-check"></i></div>
+          <div class="rc-ico"><i class="ti ti-layout-kanban" aria-hidden="true"></i></div>
+          <div class="rc-t">Programmamanager</div>
+          <div class="rc-s">Curriculum, accreditatie, coördinatie</div>
+        </div>
+        <div class="rc" data-r="Staf / Ondersteuning" onclick="pickRole(this)">
+          <div class="rc-chk"><i class="ti ti-check"></i></div>
+          <div class="rc-ico"><i class="ti ti-building" aria-hidden="true"></i></div>
+          <div class="rc-t">Staf / Ondersteuning</div>
+          <div class="rc-s">Studentzaken, communicatie, operations</div>
+        </div>
+      </div>
+      <div class="lbl">Beschrijf je uitdagingen</div>
+      <textarea id="ctx" rows="5" maxlength="700"
+        placeholder="Schrijf vrijuit. Wat kost je de meeste tijd? Waar loop je tegenaan? Je kunt meerdere zaken benoemen."
+        oninput="document.getElementById('cl').textContent=this.value.length;chk0()"></textarea>
+      <div class="chint"><span id="cl">0</span>/700</div>
+      <div class="brow">
+        <button class="bp" id="b0" disabled onclick="doS1()">
+          Verder <i class="ti ti-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 2 -->
+  <div class="screen" id="s1">
+    <div class="hero">
+      <div class="htag">Stap 2 — Verificatie</div>
+      <div class="htitle">Herkennen we dit <em>goed</em>?</div>
+      <div class="hbody">We herkenden het volgende in jouw beschrijving. Klopt dit — en mis je nog iets?</div>
+    </div>
+    <div class="body">
+      <div id="s1spin" class="spin" style="display:none">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="spin-txt">Jouw situatie analyseren...</div>
+      </div>
+      <div id="s1body">
+        <div class="vbox">
+          <div class="vbox-intro">Uitdagingen die we herkenden:</div>
+          <div id="problist"></div>
+          <div class="fq" id="fq"></div>
+        </div>
+        <div class="lbl">Aanvullingen of correcties?</div>
+        <textarea id="extra" rows="2" maxlength="400"
+          placeholder="Optioneel — vul aan of corrigeer als we iets missen."
+          oninput="document.getElementById('el').textContent=this.value.length"></textarea>
+        <div class="chint"><span id="el">0</span>/400</div>
+        <div class="brow">
+          <button class="bp" onclick="doS2()">
+            Laat me de mogelijkheden zien <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </button>
+          <button class="bg" onclick="goTo(0,'Stap 1 van 3')">
+            <i class="ti ti-arrow-left" aria-hidden="true"></i> Terug
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 3 -->
+  <div class="screen" id="s2">
+    <div class="hero">
+      <div class="htag">Jouw persoonlijk advies</div>
+      <div class="htitle">Dit is wat er <em>mogelijk</em> is</div>
+      <div class="hbody" id="h2">Op basis van jouw situatie.</div>
+    </div>
+    <div class="body">
+      <div id="s2spin" class="spin" style="display:none">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="spin-txt">Advies op maat samenstellen...</div>
+      </div>
+      <div id="s2body" style="display:none">
+        <div id="rblocks"></div>
+
+        <div class="share-box">
+          <div class="share-title">Wil je jouw uitdagingen delen met het TLC?</div>
+          <div class="share-note">
+            <i class="ti ti-info-circle" style="font-size:13px;vertical-align:-1px;margin-right:5px" aria-hidden="true"></i>
+            Het TLC gebruikt dit om te begrijpen waar Nyenrode-medewerkers tegenaan lopen. Je gegevens worden niet buiten het TLC gedeeld. Invullen is volledig vrijwillig.
+          </div>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13.5px;color:var(--txt)">
+            <input type="checkbox" id="shareCheck" style="width:17px;height:17px;accent-color:var(--ny);cursor:pointer;flex-shrink:0">
+            Ja, deel mijn uitdagingen met het TLC
+          </label>
+        </div>
+
+        <div class="cta-box">
+          <div class="cta-t">Verder verkennen?</div>
+          <div class="cta-b">Plan een 30-minuten gesprek met het TLC. We kijken samen wat haalbaar is voor jouw context bij Nyenrode.</div>
+          <button class="cta-btn" onclick="handleCTA()">
+            <i class="ti ti-calendar-plus" aria-hidden="true"></i> Gesprek inplannen
+          </button>
+        </div>
+        <div style="margin-top:12px">
+          <button class="bg" onclick="restart()">
+            <i class="ti ti-refresh" aria-hidden="true"></i> Opnieuw beginnen
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── VLEUGJE JE API SLEUTEL HIER IN ───────────────────────────────────────────
+const API_KEY = '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';
+// ──────────────────────────────────────────────────────────────────────────────
+
+let role = '', ctx = '', summary = '', adviceText = '';
+
+const CASES = [
+  {
+    keys: ['feedback','beoordel','nakijk','studentvraag','spreekuur','rubric','teaching assistant'],
+    inst: 'Georgia Tech (VS) — Jill Watson',
+    txt: 'AI teaching assistant actief voor 600+ studenten. In een controlled A/B-experiment correleerde toegang tot de agent met hogere studentsresultaten en betere ervaren docentaanwezigheid. Nauwkeurigheid: 75–97% op cursuseigen vragen.',
+    url: 'https://research.gatech.edu/georgia-techs-jill-watson-outperforms-chatgpt-real-classrooms',
+    lbl: 'Georgia Tech Research, 2025'
+  },
+  {
+    keys: ['scriptie','thesis','onderzoeksvraag','mba','begeleid','onderzoeksopzet'],
+    inst: 'Waseda University MBA (Japan) — GAMER PAT',
+    txt: 'Studie onder 83 MBA-studenten: een research-gespecialiseerde agent scoorde significant beter dan generieke AI op het verdiepen van de onderzoeksvraag en structuurondersteuning van scripties (p < 0.05).',
+    url: 'https://arxiv.org/pdf/2604.02792',
+    lbl: 'Saito et al., arxiv april 2026'
+  },
+  {
+    keys: ['communicati','procedure','faq','informatievrag','portaal','studentvraag','24/7'],
+    inst: 'University of British Columbia — AskCali',
+    txt: 'De UBC Faculty of Science ontwikkelde een AI-assistent die 24/7 studenten antwoord geeft op adviesvragen, gebaseerd op de officiële academische kalender en faculteitspagina\'s.',
+    url: 'https://cic.ubc.ca/project/student-advising-assistant/',
+    lbl: 'UBC Cloud Innovation Centre'
+  },
+  {
+    keys: ['interview','kwalitatief','respondent','dataverzamel','transcript','codering'],
+    inst: 'Scientific Reports (peer-reviewed)',
+    txt: 'Studie evalueerde een AI-interviewer over 54 gestructureerde vragen met adaptieve follow-ups. De agent genereerde contextgevoelige vervolgvragen vergelijkbaar met menselijke interviewers.',
+    url: 'https://www.nature.com/articles/s41598-026-46517-7',
+    lbl: 'Scientific Reports, 2026'
+  }
+];
+
+const ICON = {
+  feedback: 'ti-file-check',
+  begeleiding: 'ti-brain',
+  interviews: 'ti-microphone-2',
+  literatuur: 'ti-books',
+  communicatie: 'ti-message-bolt',
+  accreditatie: 'ti-report',
+  overig: 'ti-bulb'
+};
+
+function pickRole(el) {
+  document.querySelectorAll('.rc').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  role = el.dataset.r;
+  chk0();
+}
+
+function chk0() {
+  document.getElementById('b0').disabled = !(role && document.getElementById('ctx').value.trim().length > 25);
+}
+
+async function callClaude(system, user) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: system,
+      messages: [{ role: 'user', content: user }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`API fout ${res.status}: ${err}`);
+  }
+  const d = await res.json();
+  let txt = d.content.find(b => b.type === 'text')?.text || '';
+  return txt.replace(/^```json\s*/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+}
+
+async function doS1() {
+  ctx = document.getElementById('ctx').value.trim();
+  goTo(1, 'Stap 2 van 3');
+  document.getElementById('s1spin').style.display = 'flex';
+  document.getElementById('s1body').style.display = 'none';
+
+  try {
+    const txt = await callClaude(
+      'Je bent een onderwijsinnovatiespecialist bij het TLC van Nyenrode Business University. Analyseer de beschrijving van een medewerker. Geef ALLEEN ruwe JSON terug, geen markdown, geen uitleg, niets anders dan de JSON.',
+      `Rol: ${role}\nBeschrijving: "${ctx}"\n\nGeef terug als JSON:\n{"problemen":["korte zin 1","korte zin 2"],"vervolgvraag":"één gerichte vervolgvraag"}\n\nRegels:\n- Max 4 problemen\n- Problemen in de eigen woorden en context van de persoon, herkenbaar geformuleerd\n- Vervolgvraag specifiek voor hun situatie, niet generiek\n- Nederlands`
+    );
+    const p = JSON.parse(txt);
+    summary = (p.problemen || []).join(' | ');
+    const pl = document.getElementById('problist');
+    pl.innerHTML = '';
+    (p.problemen || []).forEach((x, i) => {
+      pl.innerHTML += `<div class="pi"><div class="pn">${i + 1}</div><div class="pt">${x}</div></div>`;
+    });
+    document.getElementById('fq').innerHTML = `<span class="fq-lbl">Aanvullende vraag</span>${p.vervolgvraag || ''}`;
+  } catch (e) {
+    document.getElementById('problist').innerHTML = `<div class="pi"><div class="pn">!</div><div class="pt" style="color:#8a2a2a">Fout: ${e.message}. Controleer de API-sleutel bovenin het bestand.</div></div>`;
+    document.getElementById('fq').innerHTML = '';
+  }
+
+  document.getElementById('s1spin').style.display = 'none';
+  document.getElementById('s1body').style.display = 'block';
+}
+
+async function doS2() {
+  const extra = document.getElementById('extra').value.trim();
+  goTo(2, 'Stap 3 van 3');
+  document.getElementById('s2spin').style.display = 'flex';
+  document.getElementById('s2body').style.display = 'none';
+  document.getElementById('h2').textContent = 'Op basis van jouw situatie — per uitdaging een concrete richting.';
+
+  try {
+    const txt = await callClaude(
+      'Je bent een onderwijsinnovatiespecialist en digital product manager bij het TLC van Nyenrode Business University. Geef concreet, persoonlijk en eerlijk advies over AI-agents. ALLEEN ruwe JSON, geen markdown, geen uitleg.',
+      `Rol: ${role}\nBeschrijving: "${ctx}"${extra ? `\nAanvulling: "${extra}"` : ''}\n\nGeef per herkend probleem een concreet advies. Schrijf in de taal en context van de persoon. Wees eerlijk over wat AI wel en niet kan — benoem ook wat mensenwerk blijft.\n\nJSON:\n{"adviezen":[{"probleem":"korte probleemomschrijving","oplossing_titel":"naam max 5 woorden","oplossing_beschrijving":"2-3 zinnen: wat doet de agent precies, wat verandert er voor deze persoon, wat blijft mensenwerk","categorie":"feedback|begeleiding|interviews|literatuur|communicatie|accreditatie|overig"}]}\n\nMax 4 adviezen. Nederlands.`
+    );
+    const p = JSON.parse(txt);
+    adviceText = (p.adviezen || []).map(a => `${a.probleem}: ${a.oplossing_titel} — ${a.oplossing_beschrijving}`).join('\n\n');
+
+    const rb = document.getElementById('rblocks');
+    rb.innerHTML = '';
+    (p.adviezen || []).forEach((a, i) => {
+      const c = findCase(a.probleem + ' ' + a.oplossing_beschrijving);
+      const cHtml = c
+        ? `<div style="margin-top:8px"><div class="cc"><div class="cc-inst">${c.inst}</div><div class="cc-txt">${c.txt}</div><div class="cc-src">Bron: <a href="${c.url}" target="_blank">${c.lbl}</a></div></div></div>`
+        : '';
+      const ico = ICON[a.categorie] || ICON.overig;
+      rb.innerHTML += `
+        <div class="pb">
+          <div class="pblbl">Uitdaging ${i + 1}</div>
+          <div class="sc">
+            <div class="sh">
+              <div class="si"><i class="ti ${ico}" aria-hidden="true"></i></div>
+              <div class="st">${a.oplossing_titel}</div>
+            </div>
+            <div class="sb">${a.oplossing_beschrijving}</div>
+          </div>
+          ${cHtml}
+        </div>`;
+    });
+  } catch (e) {
+    document.getElementById('rblocks').innerHTML = `<div class="err">Fout: ${e.message}. Controleer de API-sleutel bovenin het bestand.</div>`;
+  }
+
+  document.getElementById('s2spin').style.display = 'none';
+  document.getElementById('s2body').style.display = 'block';
+}
+
+function findCase(txt) {
+  const t = txt.toLowerCase();
+  for (const c of CASES) {
+    if (c.keys.some(k => t.includes(k))) return c;
+  }
+  return null;
+}
+
+function handleCTA() {
+  const checked = document.getElementById('shareCheck').checked;
+  if (checked) {
+    const sub = encodeURIComponent('TLC Inspiratiebot — uitdagingen gedeeld');
+    const body = encodeURIComponent(
+      `Rol: ${role}\n\nBeschreven uitdagingen:\n${ctx}\n\nHerkende problemen:\n${summary}\n\nGegenereerd advies:\n${adviceText}\n\n---\nVerstuurd via de TLC AI Inspiratiebot, ${new Date().toLocaleDateString('nl-NL')}`
+    );
+    window.location.href = `mailto:barbara.vanderlinden@nyenrode.nl?subject=${sub}&body=${body}`;
+  } else {
+    window.location.href = 'mailto:barbara.vanderlinden@nyenrode.nl?subject=AI-agent verkennen';
+  }
+}
+
+function goTo(n, lbl) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById('s' + n).classList.add('on');
+  ['d0', 'd1', 'd2'].forEach((id, i) => {
+    const d = document.getElementById(id);
+    d.classList.remove('on', 'done');
+    if (i < n) d.classList.add('done');
+    else if (i === n) d.classList.add('on');
+  });
+  document.getElementById('plbl').textContent = lbl;
+}
+
+function restart() {
+  role = ''; ctx = ''; summary = ''; adviceText = '';
+  document.querySelectorAll('.rc').forEach(c => c.classList.remove('sel'));
+  ['ctx', 'extra'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['cl', 'el'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '0'; });
+  document.getElementById('b0').disabled = true;
+  document.getElementById('shareCheck').checked = false;
+  goTo(0, 'Stap 1 van 3');
+}
+</script>
+</body>
+</html>
